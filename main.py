@@ -1,21 +1,33 @@
 from operator import le
 from tokenize import Double
-from PIL import Image, ImageDraw
+
 
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import matplotlib.ticker as ticker
-from decimal import Decimal
 from csv_import import *
 from matplotlib.animation import FuncAnimation
-
-
-xdata, ydata = [], []
+import argparse
 
 
 def update(frame, x_data, y_data, ln, axs):
+    """function called for each frame
+    Parameters
+    ----------
+    frame   :   int
+                number of frame.
 
+    x_data  :   [...]
+                time value.
+
+    y_data  :   [[...], [...], ...] 
+                vertical value.
+
+    ln      :   plot
+
+    axs     :   [] of axes
+    """
+    #define plot grid for y axis 
     if frame == 0:
         for i in range(len(axs)):
             for j in range(len(axs[i])):
@@ -44,17 +56,42 @@ def update(frame, x_data, y_data, ln, axs):
     return ln,
 
 
+def parse_commandline_args():
+    parser = argparse.ArgumentParser(description="animated graph plotter")
+    parser.add_argument("data_path", help = "path to csv table")
+    parser.add_argument("-o", help = "output filename", default= "o.mp4")
+    parser.add_argument("-p", default= "vids",  help="path to video")
+    parser.add_argument("--dpi", default=100, help ="dpi for video", type=float )
+    parser.add_argument("--update", default=8.072,  help="time of showing each frame", type= float )
+    parser.add_argument("--time_col",  default=0, help = "number of column with time", type = int)
+    parser.add_argument("--nogrid", help="render without grid" ,action="store_false")
+    parser.add_argument("--figx", help="horizontal figure size in inches", default=16, type= float)
+    parser.add_argument("--figy", help="vertical figure size in inches", default=9, type= float)
+    parser.add_argument("--pcx", help ="horizontal plots count", default=-1, type = int)
+    parser.add_argument("--pcy", help = "vertical plots count", default=-1, type= int)
+    args  = parser.parse_args()
+    return args
+
+xdata, ydata = [], []
 def main():
+    args = parse_commandline_args()
     # vars
-    dataPath = "data_ex/2021_08_06_09_39_21.csv"
-    hor_plot_count, ver_plot_count = 3, 2
-    output_filename = dataPath.split("/")[-1]
-    video_path = "vids"
-    dpi = 100
-    interval = 8.072
-    time_col_num = 0
-    withGrid = True
-    figsize = (16, 9)
+    dataPath = args.data_path
+    if args.pcx != -1:
+        hor_plot_count =args.pcx
+    else:
+        hor_plot_count = 3
+    if args.pcy !=-1:
+        ver_plot_count =  args.pcy
+    else:
+        ver_plot_count = 2
+    output_filename = args.o
+    video_path = args.p
+    dpi = args.dpi
+    interval = args.update
+    time_col_num = args.time_col
+    withGrid = args.nogrid
+    figsize = (args.figx, args.figy)
 
     #import csv as array
     table = get_csv(dataPath)
@@ -86,7 +123,7 @@ def main():
     if not os.path.exists(video_path):
         os.mkdir(video_path)
 
-    ani.save("{}/{}.mp4".format(video_path, output_filename), dpi=dpi)
+    ani.save("{}/{}".format(video_path, output_filename), dpi=dpi)
 
 
 main()

@@ -6,7 +6,7 @@ def get_column(tab, num):
         try:
             result.append(float(row[num]))
         except:
-            print("error", row[num])
+            print("Info: can't parse to numeric: ", row[num], " skipping")
     return result
 
 def get_csv(filename):
